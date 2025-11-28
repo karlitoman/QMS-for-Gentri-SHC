@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Live Queue Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html,body { height:100%; margin:0; color:#e5e7eb; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(135deg,#0b132b,#1c2541,#3a506b); background-size:300% 300%; animation:bgShift 24s ease-in-out infinite; }
+    .wrap { display:flex; height:100%; align-items:center; justify-content:center; padding:24px; }
+    .tvbox { width:90vw; max-width:1600px; max-height:90vh; background:rgba(28,37,65,0.72); backdrop-filter: blur(8px); border-radius:24px; box-shadow: 0 24px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06); padding:18px; display:flex; flex-direction:column; }
+    header { padding:12px 18px; font-size:30px; font-weight:800; background:transparent; box-shadow:none; letter-spacing:.5px; }
+    .grid { flex:1; display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; padding:12px; }
+    .card { position:relative; background: linear-gradient(180deg,#0f172a,#1f2937); border-radius:18px; padding:18px; box-shadow: 0 16px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04); overflow:hidden; }
+    .card::before { content:''; position:absolute; inset:-2px; border-radius:20px; background: radial-gradient(120px 120px at 20% 0%, rgba(147,197,253,.25), transparent 60%), radial-gradient(140px 140px at 100% 100%, rgba(16,185,129,.18), transparent 60%); pointer-events:none; }
+    .dept { font-size:24px; font-weight:800; margin-bottom:12px; color:#93c5fd; }
+    .now { display:flex; align-items:center; gap:16px; margin:8px 0 20px; }
+    .label { font-size:16px; color:#cbd5e1; }
+    .number { font-size:110px; font-weight:900; letter-spacing:10px; line-height:1; color:#fef3c7; text-shadow: 0 10px 26px rgba(254,243,199,.28), 0 0 40px rgba(253,230,138,.18); animation: glowPulse 3.6s ease-in-out infinite; }
+    .number.updated { animation: glowFlash .9s ease-out; transform: scale(1.04); }
+    .counts { display:flex; gap:12px; flex-wrap:wrap; margin-top:auto; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:999px; font-weight:700; }
+    .pill.red { background:#7f1d1d; color:#fecaca; }
+    .pill.green { background:#064e3b; color:#a7f3d0; }
+    .progress { position:relative; height:12px; background:#0b1020; border-radius:999px; overflow:hidden; box-shadow: inset 0 0 8px rgba(15,23,42,.6); margin-top:12px; }
+    .progress .pri { height:100%; background: linear-gradient(90deg,#ef4444,#b91c1c); transition: width .6s ease-out; }
+    .progress .reg { position:absolute; left:0; top:0; height:100%; background: linear-gradient(90deg,#10b981,#047857); transition: width .6s ease-out; mix-blend-mode: screen; opacity:.85; }
+    .small { font-size:13px; color:#94a3b8; margin-top:10px; }
+    @keyframes bgShift { 0%{ background-position:0% 50% } 50%{ background-position:100% 50% } 100%{ background-position:0% 50% } }
+    @keyframes glowPulse { 0%,100%{ text-shadow: 0 10px 26px rgba(254,243,199,.24), 0 0 30px rgba(253,230,138,.12) } 50%{ text-shadow: 0 14px 40px rgba(254,243,199,.42), 0 0 60px rgba(253,230,138,.28) } }
+    @keyframes glowFlash { 0%{ filter: brightness(1) } 40%{ filter: brightness(1.25) } 100%{ filter: brightness(1) } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tvbox">
+      <header>General Trias SHC — Live Queue Display</header>
+      <div id="grid" class="grid"></div>
+    </div>
+  </div>
+  <script>
+    async function getJSON(url){ const r = await fetch(url); const j = await r.json(); return j?.data ?? j; }
+    function groupByDept(items){
+      const g = {};
+      (items||[]).forEach(x=>{
+        const k = (x.department_name||'').trim() || 'Unknown';
+        g[k] = g[k] || [];
+        g[k].push(x);
+      });
+      return g;
+    }
+    function render(depts){
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      const names = Object.keys(depts).sort();
+      names.forEach(name=>{
+        const list = depts[name];
+        const called = list.filter(x => (x.status||'').toLowerCase()==='called').map(x=>x.queue_number).sort((a,b)=>a-b)[0] ?? '—';
+        const waitPri = list.filter(x => (x.status||'').toLowerCase()==='waiting' && (x.priority==='Emergency'||x.priority==='Priority')).length;
+        const waitReg = list.filter(x => (x.status||'').toLowerCase()==='waiting' && x.priority==='Regular').length;
+        const totalWait = waitPri + waitReg;
+        const priPct = totalWait ? Math.round((waitPri/totalWait)*100) : 0;
+        const regPct = totalWait ? 100 - priPct : 0;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="dept">${name}</div>
+          <div class="now">
+            <span class="label">Now Serving</span>
+            <span class="number">${called==='—'?'—':String(called).padStart(3,'0')}</span>
+          </div>
+          <div class="counts">
+            <span class="pill red">Priority Waiting: ${waitPri}</span>
+            <span class="pill green">Regular Waiting: ${waitReg}</span>
+          </div>
+          <div class="progress">
+            <div class="pri" style="width:${priPct}%"></div>
+            <div class="reg" style="width:${regPct}%"></div>
+          </div>
+          <div class="small">Live updates on new tickets and calls</div>
+        `;
+        grid.appendChild(card);
+        if (name.toLowerCase() === 'medical') { card.style.gridColumn = '2'; card.style.justifySelf = 'center'; }
+        const numEl = card.querySelector('.number');
+        if (numEl) { numEl.classList.add('updated'); setTimeout(()=> numEl.classList.remove('updated'), 900); }
+      });
+    }
+    async function refresh(){
+      try {
+        const items = await getJSON('backend/list_queue.php');
+        render(groupByDept(items));
+      } catch(e){}
+    }
+    (function subscribe(){
+      try {
+        const bc = new BroadcastChannel('queue-updates');
+        bc.onmessage = ()=> refresh();
+      } catch(e){}
+    })();
+    refresh();
+    setInterval(refresh, 15000);
+  </script>
+</body>
+</html>
