@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Panel</title>
+  <link rel="icon" href="assets/img/doctor_icon.png" />
+  <link rel="stylesheet" href="assets/css/admin_style.css" />
+  <style>
+    .queue-panels-container { padding: 24px; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); border-radius: 20px; box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
+    .department-group { margin-bottom: 28px; }
+    .department-title { font-size: 20px; font-weight: 800; margin: 6px 0 16px; color:#1f2937; }
+    .single-row { display:flex; justify-content:center; }
+    .queue-panel { display:flex; flex-direction:column; align-items:center; padding:28px 24px; border:1px solid #d9dee5; border-radius:20px; background: linear-gradient(135deg, #ffffff 0%, #f7f9ff 100%); box-shadow: 0 16px 36px rgba(0,0,0,0.10); transition: transform .15s ease, box-shadow .15s ease; max-width: 780px; width: 100%; }
+    .queue-panel:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+    .queue-panel h5 { font-size:20px; color:#1f2937; margin-bottom:14px; }
+    .queue-panel .queue-count { font-weight:600; color:#374151; margin-bottom:12px; }
+    .queue-panel .queue-count span { display:inline-block; padding:6px 12px; border-radius:12px; background:#eef2ff; color:#1e3a8a; box-shadow:0 4px 12px rgba(30,58,138,0.12); }
+    .queue-panel .serving { font-weight:600; color:#374151; margin-bottom:12px; }
+    .queue-panel .serving span { display:inline-block; padding:8px 14px; border-radius:14px; background: linear-gradient(135deg, #5b7cf8 0%, #4f46e5 100%); color:#fff; box-shadow: 0 8px 18px rgba(79,70,229,0.25); animation: pulse 1.6s ease-in-out infinite; }
+    .queue-panel .next { font-weight:600; color:#111827; margin-top: 6px; }
+    .queue-panel .actions { width:100%; display:flex; gap:12px; justify-content:center; margin-top: 16px; }
+    .queue-panel .actions .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border-radius:12px; border:1px solid #cdd6e4; background: linear-gradient(135deg, #2c7be5 0%, #6c5ce7 100%); color:#fff; font-weight:600; box-shadow:0 6px 16px rgba(0,0,0,0.12); transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease; }
+    .queue-panel .actions .btn:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(0,0,0,0.14); opacity:0.97; }
+    .queue-panel .actions .btn:active { transform:translateY(0); box-shadow:0 4px 10px rgba(0,0,0,0.10); }
+    .queue-panel .actions .btn[disabled] { opacity:.55; cursor:not-allowed; box-shadow:none; transform:none; }
+    .queue-panel .actions .btn-end { background: linear-gradient(135deg,#ef4444 0%, #dc2626 100%); }
+    .queue-panel .actions .btn-end:hover { opacity:0.97; }
+    @keyframes pulse { 0%{ transform:scale(1); } 50%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
+    .queue-panel .actions .btn { position:relative; overflow:hidden; }
+    .queue-panel .actions .btn .ripple { position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s ease-out; background:rgba(255,255,255,0.6); }
+    @keyframes rip { to{ transform:scale(1.8); opacity:0; } }
+    .queue-panel.clicked { animation: flashPanel .8s ease-out; }
+    @keyframes flashPanel { 0%{ box-shadow:0 0 0 rgba(79,70,229,0); } 40%{ box-shadow:0 0 48px rgba(79,70,229,0.35); } 100%{ box-shadow:0 0 0 rgba(79,70,229,0); } }
+  </style>
+  <script>
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest('.btn'); if(!btn) return;
+      var rect = btn.getBoundingClientRect(); var d = Math.max(rect.width, rect.height);
+      var r = document.createElement('span'); r.className='ripple'; r.style.width=d+'px'; r.style.height=d+'px'; r.style.left=(e.clientX-rect.left - d/2)+'px'; r.style.top=(e.clientY-rect.top - d/2)+'px';
+      btn.appendChild(r); setTimeout(function(){ r.remove(); }, 650);
+      var panel = btn.closest('.queue-panel'); if(panel){ panel.classList.add('clicked'); setTimeout(function(){ panel.classList.remove('clicked'); }, 820); }
+    });
+  </script>
+</head>
+<body class="doctor">
+  <header class="header">
+    <div class="logo-placeholder"></div>
+    <h1>GENERAL TRIAS SUPER HEALTH CENTER</h1>
+    <!-- Top-right user menu -->
+    <div class="user-menu" aria-label="User menu">
+      <button type="button" class="user-toggle" aria-haspopup="true" aria-expanded="false">
+        <span class="user-avatar"></span>
+        <span id="userNameLabel">Doctor</span>
+        <span class="caret">▾</span>
+      </button>
+      <div class="user-dropdown hidden" role="menu">
+        <a href="#" class="item" role="menuitem">Profile</a>
+        <a href="#" class="item" role="menuitem">Messages</a>
+        <div class="divider"></div>
+        <div class="has-submenu">
+          <button class="item" type="button">Language <span class="caret">▸</span></button>
+          <div class="submenu">
+            <button class="item" type="button">English</button>
+            <button class="item" type="button">Filipino</button>
+          </div>
+        </div>
+        <div class="has-submenu">
+          <button class="item" type="button">Settings <span class="caret">▸</span></button>
+          <div class="submenu">
+            <a href="#" class="item">Account</a>
+            <a href="#" class="item">Preferences</a>
+          </div>
+        </div>
+        <a href="login.php" class="item" data-action="logout" role="menuitem">Log out</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <div class="welcome"></div>
+      <div class="sidebar-logo"></div>
+      <h2 class="sidebar-admin-label page-title center">DOCTOR</h2>
+      <nav>
+        <a href="#" class="nav-link active" data-target="patients">View Patient Records</a>
+        <a href="#" class="nav-link" data-target="queues">View Queue</a>
+      </nav>
+      <div class="footer-nav">
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- Patient Records -->
+      <section id="patients" class="page-section">
+        <div class="card">
+          <h3>Patient Records</h3>
+          <div class="table-responsive">
+            <table class="department-table">
+                <thead>
+                  <tr>
+                    <th>Case No.</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Department</th>
+                    <th>Visit Type</th>
+                    <th>Client Type</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="doctorPatientsTableBody">
+                  <!-- Rows populated by JS or static placeholder -->
+                  <tr>
+                    <td>DR-0001</td>
+                    <td>Doe</td>
+                    <td>Jane</td>
+                    <td>Medical</td>
+                    <td>Consultation</td>
+                    <td>Regular</td>
+                    <td>2025-10-04</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+      </section>
+
+      <!-- View Queue -->
+      <section id="queues" class="page-section hidden">
+        <div class="cards-grid">
+          <div class="card">
+            <h3>Department Queues</h3>
+            <div class="queue-panels-container">
+              <!-- Medical Group -->
+              <div class="department-group">
+                <h4 class="department-title">Medical</h4>
+                <div class="single-row">
+                  <div class="queue-panel" id="medical-merged-panel">
+                    <h5>Medical Queue</h5>
+                    <p class="queue-count">Waiting: Priority <span id="medical-priority-waiting-count">0</span> | Regular <span id="medical-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: Priority <span id="medical-priority-serving">—</span> | Regular <span id="medical-regular-serving">—</span></p>
+                    <p class="next">Next Recommendation: <span id="medical-next-hint">—</span></p>
+                    <div class="actions">
+                      <button class="btn btn-next" id="medical-merged-next-btn">Invite Next</button>
+                      <button class="btn btn-end" id="medical-merged-end-btn">End Session</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OPD Group -->
+              <div class="department-group">
+                <h4 class="department-title">OPD</h4>
+                <div class="single-row">
+                  <div class="queue-panel" id="opd-merged-panel">
+                    <h5>OPD Queue</h5>
+                    <p class="queue-count">Waiting: Priority <span id="opd-priority-waiting-count">0</span> | Regular <span id="opd-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: Priority <span id="opd-priority-serving">—</span> | Regular <span id="opd-regular-serving">—</span></p>
+                    <p class="next">Next Recommendation: <span id="opd-next-hint">—</span></p>
+                    <div class="actions">
+                      <button class="btn btn-next" id="opd-merged-next-btn">Invite Next</button>
+                      <button class="btn btn-end" id="opd-merged-end-btn">End Session</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dental Group -->
+              <div class="department-group">
+                <h4 class="department-title">Dental</h4>
+                <div class="single-row">
+                  <div class="queue-panel" id="dental-merged-panel">
+                    <h5>Dental Queue</h5>
+                    <p class="queue-count">Waiting: Priority <span id="dental-priority-waiting-count">0</span> | Regular <span id="dental-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: Priority <span id="dental-priority-serving">—</span> | Regular <span id="dental-regular-serving">—</span></p>
+                    <p class="next">Next Recommendation: <span id="dental-next-hint">—</span></p>
+                    <div class="actions">
+                      <button class="btn btn-next" id="dental-merged-next-btn">Invite Next</button>
+                      <button class="btn btn-end" id="dental-merged-end-btn">End Session</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Animal Bite Group -->
+              <div class="department-group">
+                <h4 class="department-title">Animal Bite</h4>
+                <div class="single-row">
+                  <div class="queue-panel" id="animal-merged-panel">
+                    <h5>Animal Bite Queue</h5>
+                    <p class="queue-count">Waiting: Priority <span id="animal-priority-waiting-count">0</span> | Regular <span id="animal-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: Priority <span id="animal-priority-serving">—</span> | Regular <span id="animal-regular-serving">—</span></p>
+                    <p class="next">Next Recommendation: <span id="animal-next-hint">—</span></p>
+                    <div class="actions">
+                      <button class="btn btn-next" id="animal-merged-next-btn">Invite Next</button>
+                      <button class="btn btn-end" id="animal-merged-end-btn">End Session</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="settings" class="page-section hidden">
+        <div class="cards-grid">
+          <div class="card">
+            <h3>Settings</h3>
+            <p>General preferences for the doctor view.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <footer class="footer">
+    <div class="footer-logo-placeholder"></div>
+    <p>Let's join forces! For a more progressive General Trias.</p>
+  </footer>
+  
+<script defer src="assets/js/admin.js?v=20251115"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const slugs = ['medical','opd','dental','animal'];
+    const toggle = (slug)=>{
+      const pri = (document.getElementById(`${slug}-priority-serving`)?.textContent || '—').trim();
+      const reg = (document.getElementById(`${slug}-regular-serving`)?.textContent || '—').trim();
+      const btn = document.getElementById(`${slug}-merged-next-btn`);
+      if (btn) { const active = (pri !== '—') || (reg !== '—'); btn.disabled = active; btn.title = active ? 'End session before inviting next' : ''; }
+    };
+    slugs.forEach(toggle);
+    try { const bc = new BroadcastChannel('queue-updates'); bc.onmessage = ()=> slugs.forEach(toggle); } catch(_) {}
+  });
+</script>
+</body>
+</html>

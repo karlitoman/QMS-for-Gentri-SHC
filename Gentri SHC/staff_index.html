@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>General Trias Super Health Center - Staff</title>
+  <link rel="stylesheet" href="assets/css/admin_style.css?v=20251115">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    #queues .queue-panels-container { padding: 12px; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); border-radius: 16px; }
+    #queues .department-group { margin-bottom: 20px; }
+    #queues .department-title { font-size: 18px; font-weight: 700; margin: 8px 0 12px; color:#1f2937; }
+    #queues .two-column-row { display:grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 20px; }
+    #queues .queue-panel { display:flex; flex-direction:column; align-items:center; padding:20px 16px; border:1px solid #d9dee5; border-radius:16px; background: linear-gradient(135deg, #ffffff 0%, #f7f9ff 100%); box-shadow: 0 10px 24px rgba(0,0,0,0.08); transition: transform .15s ease, box-shadow .15s ease; }
+    #queues .queue-panel:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(0,0,0,0.12); }
+    #queues .queue-panel h5 { font-size:18px; color:#1f2937; margin-bottom:10px; }
+    #queues .queue-panel .queue-count { font-weight:600; color:#374151; margin-bottom:8px; }
+    #queues .queue-panel .queue-count span { display:inline-block; padding:4px 10px; border-radius:12px; background:#eef2ff; color:#1e3a8a; box-shadow:0 4px 12px rgba(30,58,138,0.12); }
+    #queues .queue-panel .serving { font-weight:600; color:#374151; }
+    #queues .queue-panel .serving span { display:inline-block; padding:8px 14px; border-radius:14px; background: linear-gradient(135deg, #5b7cf8 0%, #4f46e5 100%); color:#fff; box-shadow: 0 8px 18px rgba(79,70,229,0.25); animation: pulse 1.6s ease-in-out infinite; }
+    #queues .queue-panel .actions { width:100%; display:flex; gap:10px; justify-content:center; margin-top: 10px; }
+    #queues .queue-panel .actions .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:12px; border:1px solid #cdd6e4; background: linear-gradient(135deg, #2c7be5 0%, #6c5ce7 100%); color:#fff; font-weight:600; box-shadow:0 6px 16px rgba(0,0,0,0.12); transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease; }
+    #queues .queue-panel .actions .btn:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(0,0,0,0.14); opacity:0.97; }
+    #queues .queue-panel .actions .btn:active { transform:translateY(0); box-shadow:0 4px 10px rgba(0,0,0,0.10); }
+    @keyframes pulse { 0%{ transform:scale(1); } 50%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
+    .btn { position:relative; overflow:hidden; }
+    .btn .ripple { position:absolute; border-radius:50%; transform:scale(0); animation:rip .6s ease-out; background:rgba(255,255,255,0.6); }
+    @keyframes rip { to{ transform:scale(1.8); opacity:0; } }
+    #queues .queue-panel.clicked { animation: flashPanel .8s ease-out; }
+    @keyframes flashPanel { 0%{ box-shadow:0 0 0 rgba(79,70,229,0); } 40%{ box-shadow:0 0 48px rgba(79,70,229,0.35); } 100%{ box-shadow:0 0 0 rgba(79,70,229,0); } }
+  </style>
+  <script defer src="assets/js/admin.js?v=20251115"></script>
+  <script>
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest('.btn, .queue-btn'); if(!btn) return;
+      var rect = btn.getBoundingClientRect(); var d = Math.max(rect.width, rect.height);
+      var r = document.createElement('span'); r.className='ripple'; r.style.width=d+'px'; r.style.height=d+'px'; r.style.left=(e.clientX-rect.left - d/2)+'px'; r.style.top=(e.clientY-rect.top - d/2)+'px';
+      btn.appendChild(r); setTimeout(function(){ r.remove(); }, 650);
+      var panel = btn.closest('.queue-panel'); if(panel){ panel.classList.add('clicked'); setTimeout(function(){ panel.classList.remove('clicked'); }, 820); }
+    });
+  </script>
+</head>
+<body class="staff">
+  <header class="header">
+    <div class="logo-placeholder"></div>
+    <h1>GENERAL TRIAS SUPER HEALTH CENTER</h1>
+    <!-- Top-right user menu -->
+    <div class="user-menu" aria-label="User menu">
+      <button type="button" class="user-toggle" aria-haspopup="true" aria-expanded="false">
+        <span class="user-avatar"></span>
+        <span id="userNameLabel">Staff</span>
+        <span class="caret">▾</span>
+      </button>
+      <div class="user-dropdown hidden" role="menu">
+        <a href="#" class="item" role="menuitem" data-action="profile">Profile</a>
+        <a href="#" class="item" role="menuitem">Messages</a>
+        <div class="divider"></div>
+        <div class="has-submenu">
+          <button class="item" type="button">Language <span class="caret">▸</span></button>
+          <div class="submenu">
+            <button class="item" type="button">English</button>
+            <button class="item" type="button">Filipino</button>
+          </div>
+        </div>
+        <div class="has-submenu">
+          <button class="item" type="button">Settings <span class="caret">▸</span></button>
+          <div class="submenu">
+            <a href="#" class="item">Account</a>
+            <a href="#" class="item">Preferences</a>
+          </div>
+        </div>
+        <a href="login.php" class="item" data-action="logout" role="menuitem">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <div class="welcome"></div>
+      <div class="sidebar-logo"></div>
+      <h2 class="sidebar-admin-label page-title center">STAFF</h2>
+      <nav>
+        <a href="#" class="nav-link" data-target="dashboard">Dash Board</a>
+        <a href="#" class="nav-link" data-target="patients">Manage Patients</a>
+        <a href="#" class="nav-link" data-target="queues">Managing of Queues</a>
+      </nav>
+
+    </aside>
+
+    <main class="content">
+      <section id="dashboard" class="page-section">
+        <div class="dashboard-header">
+          <h2 class="page-title center">Welcome to the Staff Dashboard!</h2>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-card card-blue">
+            <div class="dashboard-card-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="dashboard-card-count" id="patientsServedCount">0</div>
+            <div class="dashboard-card-title">Patient Served</div>
+          </div>
+          <div class="dashboard-card card-purple">
+            <div class="dashboard-card-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="dashboard-card-count" id="patientsWaitingCount">0</div>
+            <div class="dashboard-card-title">Patient Waiting</div>
+          </div>
+        </div>
+        
+      </section>
+
+      <section id="patients" class="page-section hidden">
+        <h2 class="page-title">Patient List</h2>
+        <div class="card">
+          <!-- Control Bar: search, show-all toggle, actions, and Add Patient -->
+          <div class="control-bar">
+            <div class="toolbar-left">
+              <div class="filter-group">
+                <input type="text" class="filter-search" placeholder="Search patients..." aria-label="Search patients" />
+                <label class="toggle-all">
+                  <input type="checkbox" id="showAllPatients" checked>
+                  <span>Show: All</span>
+                </label>
+                <button type="button" class="toolbar-actions">Actions <span class="caret">▾</span></button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <button type="button" class="btn-add-staff" onclick="openAddPatientModal()"><span class="plus">+</span> Add Patient</button>
+            </div>
+          </div>
+
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th>Patient No.</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Middle Name</th>
+                <th>Department</th>
+                <th>Visit Type</th>
+                <th>Prioritization</th>
+                <th class="actions-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="patientsTableBody">
+              <!-- Patient data will be loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="queues" class="page-section hidden">
+        <div class="cards-grid">
+          <div class="card">
+            <h3>Department Queues</h3>
+            <div class="queue-panels-container">
+              <!-- Medical Group -->
+              <div class="department-group">
+                <h4 class="department-title">Medical</h4>
+                <div class="two-column-row">
+                  <div class="queue-panel" id="medical-priority-panel">
+                    <h5>Priority Lane</h5>
+                    <p class="queue-count">Waiting: <span id="medical-priority-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="medical-priority-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="medical-priority">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="medical-priority">Invite by Number</button>
+                    </div>
+                  </div>
+                  <div class="queue-panel" id="medical-regular-panel">
+                    <h5>Regular Lane</h5>
+                    <p class="queue-count">Waiting: <span id="medical-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="medical-regular-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="medical-regular">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="medical-regular">Invite by Number</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OPD Group -->
+              <div class="department-group">
+                <h4 class="department-title">OPD</h4>
+                <div class="two-column-row">
+                  <div class="queue-panel" id="opd-priority-panel">
+                    <h5>Priority Lane</h5>
+                    <p class="queue-count">Waiting: <span id="opd-priority-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="opd-priority-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="opd-priority">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="opd-priority">Invite by Number</button>
+                    </div>
+                  </div>
+                  <div class="queue-panel" id="opd-regular-panel">
+                    <h5>Regular Lane</h5>
+                    <p class="queue-count">Waiting: <span id="opd-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="opd-regular-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="opd-regular">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="opd-regular">Invite by Number</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dental Group -->
+              <div class="department-group">
+                <h4 class="department-title">Dental</h4>
+                <div class="two-column-row">
+                  <div class="queue-panel" id="dental-priority-panel">
+                    <h5>Priority Lane</h5>
+                    <p class="queue-count">Waiting: <span id="dental-priority-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="dental-priority-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="dental-priority">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="dental-priority">Invite by Number</button>
+                    </div>
+                  </div>
+                  <div class="queue-panel" id="dental-regular-panel">
+                    <h5>Regular Lane</h5>
+                    <p class="queue-count">Waiting: <span id="dental-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="dental-regular-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="dental-regular">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="dental-regular">Invite by Number</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Animal Bite Group -->
+              <div class="department-group">
+                <h4 class="department-title">Animal Bite</h4>
+                <div class="two-column-row">
+                  <div class="queue-panel" id="animal-priority-panel">
+                    <h5>Priority Lane</h5>
+                    <p class="queue-count">Waiting: <span id="animal-priority-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="animal-priority-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="animal-bite-priority">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="animal-bite-priority">Invite by Number</button>
+                    </div>
+                  </div>
+                  <div class="queue-panel" id="animal-regular-panel">
+                    <h5>Regular Lane</h5>
+                    <p class="queue-count">Waiting: <span id="animal-regular-waiting-count">0</span></p>
+                    <p class="serving">Currently serving: <span id="animal-regular-serving">—</span></p>
+                    <div class="actions">
+                      <button class="btn invite-next" data-target="animal-bite-regular">Invite Next</button>
+                      <button class="btn invite-by-number" data-target="animal-bite-regular">Invite by Number</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="page-section hidden">
+        <h2 class="page-title">Settings</h2>
+        <div class="card">
+          <p>General settings for staff users.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Add Patient Modal -->
+  <div id="addPatientModal" class="modal-overlay hidden">
+    <div class="modal patient-modal">
+      <div class="modal-header">
+        <h3>Add Patient</h3>
+        <button type="button" class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="addPatientForm">
+          <h2 class="page-title">1. CLIENT PROFILE</h2>
+          <div class="form-group">
+            <label for="caseNumber">Case Number</label>
+            <input type="text" id="caseNumber" readonly />
+          </div>
+          <div class="form-group">
+            <label for="philHealthId">PhilHealth Identification Number</label>
+            <input type="text" id="philHealthId" />
+          </div>
+          <h3 class="page-title">Client Details</h3>
+          <div class="form-group">
+            <label for="lastNameFull">Last Name *</label>
+            <input type="text" id="lastNameFull" />
+          </div>
+          <div class="form-group">
+            <label for="firstNameFull">First Name *</label>
+            <input type="text" id="firstNameFull" />
+          </div>
+          <div class="form-group">
+            <label for="middleNameFull">Middle Name</label>
+            <input type="text" id="middleNameFull" />
+          </div>
+          <div class="form-group">
+            <label for="extensionName">Extension Name</label>
+            <input type="text" id="extensionName" />
+          </div>
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" min="0" readonly />
+          </div>
+          <div class="form-group">
+            <label for="dob">Date of Birth (mm/dd/yyyy)</label>
+            <input type="date" id="dob" />
+          </div>
+          <div class="form-group">
+            <label>Sex</label>
+            <div>
+              <label><input type="radio" name="sex" value="Male"> Male</label>
+              <label style="margin-left:12px;"><input type="radio" name="sex" value="Female"> Female</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="clientType">Client Type</label>
+            <select id="clientType">
+              <option value="">Select client type</option>
+              <option value="PWD">PWD</option>
+              <option value="Senior">Senior</option>
+              <option value="Pregnant">Pregnant</option>
+              <option value="Regular">Regular</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="visitType">Visit Type</label>
+            <select id="visitType">
+              <option value="">Select visit type</option>
+              <option value="Old (Follow-up)">Old (Follow-up)</option>
+              <option value="New">New</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <select id="department">
+              <option value="">Select department</option>
+              <option value="Medical">Medical</option>
+              <option value="OPD">OPD</option>
+              <option value="Dental">Dental</option>
+              <option value="Animal Bite">Animal Bite</option>
+            </select>
+          </div>
+
+          <h2 class="page-title">2. REVIEW OF SYSTEMS *</h2>
+          <div class="form-group">
+            <label for="chiefComplaint">1. Chief complaint (please describe)</label>
+            <textarea id="chiefComplaint" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>2. Loss of appetite, lack of sleep, weight loss, depression, fever, headache, memory loss, blurred vision, hearing loss?</label>
+            <div>
+              <label><input type="radio" name="ros2" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros2" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros2Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>3. Cough/colds, chest pain, palpitations, or difficulty in breathing?</label>
+            <div>
+              <label><input type="radio" name="ros3" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros3" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros3Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>4. Abdominal pain, vomiting, change in bowel movement, rectal bleeding, or bloody/tarry stools?</label>
+            <div>
+              <label><input type="radio" name="ros4" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros4" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros4Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>5. Frequent urination, frequent eating, frequent intake of fluids?</label>
+            <div>
+              <label><input type="radio" name="ros5" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros5" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros5Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>6. Pain/discomfort on urination, frequency/dribbling of urine, pain during/after sex, blood in urine, or foul-smelling genital discharge?</label>
+            <div>
+              <label><input type="radio" name="ros6" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros6" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros6Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>7. (Females only) Last menstrual period / First menstrual period / Number of pregnancies</label>
+            <input type="text" id="lmp" placeholder="Last menstrual period (mm/dd/yyyy)" />
+            <input type="text" id="fmp" placeholder="First menstrual period (mm/dd/yyyy)" style="margin-top:6px;" />
+            <input type="number" id="pregnancies" placeholder="Number of pregnancy" style="margin-top:6px;" />
+          </div>
+          <div class="form-group">
+            <label>8. Muscle spasm, tremors, weakness; muscle/joint pain, stiffness, limitation of movement?</label>
+            <div>
+              <label><input type="radio" name="ros8" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros8" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros8Explain" rows="2"></textarea>
+          </div>
+
+          <h2 class="page-title">3. PERSONAL/SOCIAL HISTORY</h2>
+          <div class="form-group">
+            <label>Do you smoke cigar, cigarette, e-cigarette, vape, or similar products?</label>
+            <div>
+              <label><input type="radio" name="smoke" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="smoke" value="No"> No</label>
+            </div>
+            <input type="number" id="smokeYears" placeholder="Number of years" style="margin-top:6px;" />
+          </div>
+          <div class="form-group">
+            <label>Do you drink alcohol or alcohol-containing beverages?</label>
+            <div>
+              <label><input type="radio" name="alcohol" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="alcohol" value="No"> No</label>
+            </div>
+            <input type="number" id="alcoholYears" placeholder="Number of years" style="margin-top:6px;" />
+          </div>
+
+          <h2 class="page-title">4. PAST MEDICAL HISTORY</h2>
+          <div class="form-group">
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <label><input type="checkbox" name="pmh" value="Cancer"> Cancer</label>
+              <label><input type="checkbox" name="pmh" value="Allergies"> Allergies</label>
+              <label><input type="checkbox" name="pmh" value="Diabetes Mellitus"> Diabetes Mellitus</label>
+              <label><input type="checkbox" name="pmh" value="Hypertension"> Hypertension</label>
+              <label><input type="checkbox" name="pmh" value="Heart Disease"> Heart Disease</label>
+              <label><input type="checkbox" name="pmh" value="Stroke"> Stroke</label>
+              <label><input type="checkbox" name="pmh" value="Bronchial asthma"> Bronchial asthma</label>
+              <label><input type="checkbox" name="pmh" value="COPD/emphysema/bronchitis"> COPD/emphysema/bronchitis</label>
+              <label><input type="checkbox" name="pmh" value="Tuberculosis"> Tuberculosis</label>
+              <label><input type="checkbox" name="pmh" value="Others"> Others</label>
+              <label><input type="checkbox" name="pmh" value="None"> None</label>
+            </div>
+            <input type="text" id="pmhOthers" placeholder="If others, please specify" style="margin-top:6px;" />
+          </div>
+
+          <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+            <label for="printTicket" style="font-weight:600;">Print ticket</label>
+            <input type="checkbox" id="printTicket" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel">Cancel</button>
+            <button type="submit" class="modal-save">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Record Modal -->
+  <div id="editModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Record</h3>
+        <button type="button" class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="modal-fields"></div>
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel">Cancel</button>
+            <button type="submit" class="modal-save">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Patient Modal -->
+  <div id="editPatientModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Patient</h3>
+        <button type="button" class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="editPatientForm">
+          <input type="hidden" id="editPatientId">
+          <h2 class="page-title">CLIENT PROFILE</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editCaseNumber">Case Number</label>
+              <input type="text" id="editCaseNumber" readonly>
+            </div>
+            <div class="form-group">
+              <label for="editPhilhealthId">PhilHealth ID</label>
+              <input type="text" id="editPhilhealthId">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editLastNameFull">Last Name</label>
+              <input type="text" id="editLastNameFull" required>
+            </div>
+            <div class="form-group">
+              <label for="editFirstNameFull">First Name</label>
+              <input type="text" id="editFirstNameFull" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editMiddleNameFull">Middle Name</label>
+              <input type="text" id="editMiddleNameFull">
+            </div>
+            <div class="form-group">
+              <label for="editExtensionName">Extension Name</label>
+              <input type="text" id="editExtensionName">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editAge">Age</label>
+              <input type="number" id="editAge" required>
+            </div>
+            <div class="form-group">
+              <label for="editDateOfBirth">Date of Birth</label>
+              <input type="date" id="editDateOfBirth" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editSex">Sex</label>
+              <select id="editSex" required>
+                <option value="">Select sex</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editPhone">Phone</label>
+              <input type="text" id="editPhone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editAddress">Address</label>
+            <textarea id="editAddress" rows="2"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editEmergencyContact">Emergency Contact</label>
+              <input type="text" id="editEmergencyContact">
+            </div>
+            <div class="form-group">
+              <label for="editEmergencyPhone">Emergency Phone</label>
+              <input type="text" id="editEmergencyPhone">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel">Cancel</button>
+            <button type="submit" class="modal-save">Update Patient</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-logo-placeholder"></div>
+    <p>Let's join forces! For a more progressive General Trias.</p>
+  </footer>
+
+  <!-- Staff Profile Modal -->
+  <div id="staffProfileModal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="staffProfileTitle">
+      <div class="modal-header">
+        <h3 id="staffProfileTitle">Staff Profile</h3>
+        <button type="button" class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-banner">
+          <img src="assets/img/staff_icon.png" alt="Staff" class="profile-avatar">
+          <div class="profile-role">STAFF</div>
+        </div>
+        <form id="staffProfileForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffFirstName">First Name</label>
+              <input type="text" id="staffFirstName">
+            </div>
+            <div class="form-group">
+              <label for="staffLastName">Last Name</label>
+              <input type="text" id="staffLastName">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffMiddleName">Middle Name</label>
+              <input type="text" id="staffMiddleName">
+            </div>
+            <div class="form-group">
+              <label for="staffEmail">Email</label>
+              <input type="email" id="staffEmail">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffAddress">Address</label>
+              <input type="text" id="staffAddress">
+            </div>
+            <div class="form-group">
+              <label for="staffContactNumber">Contact Number</label>
+              <input type="text" id="staffContactNumber">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="staffCity">City</label>
+              <select id="staffCity">
+                <option value="">Select city</option>
+                <option value="Bacoor">Bacoor</option>
+                <option value="Carmona">Carmona</option>
+                <option value="Cavite City">Cavite City</option>
+                <option value="Dasmariñas">Dasmariñas</option>
+                <option value="General Trias">General Trias</option>
+                <option value="Imus">Imus</option>
+                <option value="Tagaytay">Tagaytay</option>
+                <option value="Trece Martires">Trece Martires</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="staffProvince">Province</label>
+              <input type="text" id="staffProvince" value="Cavite">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel">Cancel</button>
+            <button type="submit" id="staffProfileSaveBtn" class="modal-save">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal-container delete-modal">
+      <div class="modal-content">
+        <div class="delete-icon">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 class="delete-title">You are about to delete this record</h3>
+        <p class="delete-message">This will permanently remove this record from the system. Are you sure you want to continue?</p>
+        <div class="delete-actions">
+          <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+          <button type="button" class="btn-delete-confirm" onclick="confirmDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

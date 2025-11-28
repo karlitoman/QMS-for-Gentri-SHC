@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Trias Super Health Center - Patient</title>
+  <link rel="stylesheet" href="assets/css/admin_style.css">
+  <link rel="stylesheet" href="assets/css/login_style.css">
+  <style>
+    /* Layout helpers to keep footer at bottom */
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    main.content { flex: 1; background: none !important; background-image: none !important; }
+
+    /* Remove greyish line under header */
+    header {
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Patient modal enhancements (scoped) */
+    .patient-modal { max-width: 960px; border-radius: 12px; box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+    .patient-modal .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e6e9f0; }
+    .patient-modal .modal-header h3 { margin: 0; font-size: 20px; color: #1f2937; }
+    .patient-modal .modal-close { background: transparent; border: 1px solid var(--border); font-size: 20px; cursor: pointer; color: var(--primary-600); border-radius: 6px; padding: 4px 10px; }
+    .patient-modal .modal-close:hover { color: var(--primary-700); }
+    .patient-modal .modal-body { padding: 16px 20px; max-height: 70vh; overflow-y: auto; }
+
+    /* Form grid layout */
+    #addPatientForm { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 768px) { #addPatientForm { grid-template-columns: 1fr 1fr; } }
+    #addPatientForm .page-title, #addPatientForm .modal-actions { grid-column: 1 / -1; }
+
+    /* Form group card style */
+    .form-group { background: #ffffff; border: 1px solid #e6e9f0; border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .form-group label { font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group input[type="tel"],
+    .form-group select,
+    .form-group textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cdd6e4; outline: none; font-size: 14px; color: #111827; background: #fff; }
+    .form-group textarea { resize: vertical; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #2c7be5; box-shadow: 0 0 0 3px rgba(44, 123, 229, 0.15); }
+    .form-group > div label { font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+
+    /* Section titles */
+    .page-title { font-size: 18px; color: #1f2937; margin: 10px 0; padding-left: 10px; border-left: 4px solid #2c7be5; }
+
+    /* Modal actions buttons */
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+    .modal-save { background: #2c7be5; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+    .modal-save:hover { background: #2269c7; }
+    .modal-cancel { background: #eef2f7; color: #374151; border: 1px solid #e6e9f0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+    .modal-cancel:hover { background: #e6ebf3; }
+
+    /* Ticket Display Styles */
+    .ticket-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 70vh;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 100%;
+    }
+
+    .ticket-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .ticket-header h1 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .ticket-number-section {
+      background: #f8f9ff;
+      border-radius: 15px;
+      padding: 30px 20px;
+      margin-bottom: 25px;
+      border: 2px solid #e8ecff;
+    }
+
+    .ticket-label {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .ticket-number {
+      font-size: 72px;
+      font-weight: bold;
+      color: #4f46e5;
+      margin: 10px 0;
+      line-height: 1;
+    }
+
+    .ticket-status {
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .ticket-wait-time {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .ticket-wait-time span:last-child {
+      font-weight: 600;
+      color: #4f46e5;
+    }
+
+    .now-serving-section {
+      background: #fff5f5;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      border: 2px solid #fed7d7;
+    }
+
+    .now-serving-label {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .now-serving-number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #e53e3e;
+      line-height: 1;
+    }
+
+    .ticket-info {
+      background: #f7fafc;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .ticket-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .ticket-container {
+        padding: 30px 20px;
+        margin: 10px;
+      }
+      
+      .ticket-number {
+        font-size: 60px;
+      }
+      
+      .now-serving-number {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header matching the login forms -->
+  <header>
+    <div class="header-content">
+      <div class="logo-placeholder left-logo"></div>
+      <h1>GENERAL TRIAS SUPER HEALTH CENTER</h1>
+      <p>Arnaldo Hwy, General Trias, Cavite</p>
+    </div>
+  </header>
+
+  <main class="content" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
+    <div class="card" style="max-width:680px; width:100%; text-align:center;">
+      <h2 class="page-title center" style="margin-bottom:12px;">Welcome to General Trias Health Center</h2>
+      <p style="color:#555; margin-bottom:18px;">Please enter the queue and fill out your details so we can serve you promptly.</p>
+      <div style="display:flex; justify-content:center;">
+        <button id="enterQueueBtn" class="form-save-btn" style="padding:10px 24px; font-size:18px; border-radius:20px;">Enter Queue</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Patient Queue Modal: mirror Admin Add Patient form -->
+  <div id="patientQueueModal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal patient-modal" role="dialog" aria-modal="true" aria-labelledby="patientModalTitle">
+      <div class="modal-header">
+        <h3 id="patientModalTitle">Add Patient</h3>
+        <button type="button" class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="addPatientForm">
+          <h2 class="page-title">Patient Registration</h2>
+          <div class="form-group">
+            <label for="caseNumber">Case Number</label>
+            <input type="text" id="caseNumber" readonly />
+          </div>
+          <div class="form-group">
+            <label for="philHealthId">PhilHealth Identification Number</label>
+            <input type="text" id="philHealthId" />
+          </div>
+          
+          <h3 class="page-title">Personal Information</h3>
+          <div class="form-group">
+            <label for="lastNameFull">Last Name *</label>
+            <input type="text" id="lastNameFull" required />
+          </div>
+          <div class="form-group">
+            <label for="firstNameFull">First Name *</label>
+            <input type="text" id="firstNameFull" required />
+          </div>
+          <div class="form-group">
+            <label for="middleNameFull">Middle Name</label>
+            <input type="text" id="middleNameFull" />
+          </div>
+          <div class="form-group">
+            <label for="extensionName">Extension Name</label>
+            <input type="text" id="extensionName" placeholder="Jr., Sr., III, etc." />
+          </div>
+          <div class="form-group">
+            <label for="age">Age *</label>
+            <input type="number" id="age" min="0" max="150" required readonly />
+          </div>
+          <div class="form-group">
+            <label for="dob">Date of Birth *</label>
+            <input type="date" id="dob" required />
+          </div>
+          <div class="form-group">
+            <label>Sex *</label>
+            <div>
+              <label><input type="radio" name="sex" value="Male" required> Male</label>
+              <label style="margin-left:12px;"><input type="radio" name="sex" value="Female" required> Female</label>
+            </div>
+          </div>
+          
+          <h3 class="page-title">Contact Information</h3>
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" placeholder="09123456789" />
+          </div>
+          <div class="form-group">
+            <label for="address">Address</label>
+            <textarea id="address" rows="2" placeholder="Complete address"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="emergencyContact">Emergency Contact Name</label>
+            <input type="text" id="emergencyContact" />
+          </div>
+          <div class="form-group">
+            <label for="emergencyPhone">Emergency Contact Phone</label>
+            <input type="tel" id="emergencyPhone" placeholder="09123456789" />
+          </div>
+          
+          <h3 class="page-title">Visit Information</h3>
+          <div class="form-group">
+            <label for="clientType">Client Type *</label>
+            <select id="clientType" required>
+              <option value="">Select client type</option>
+              <option value="PWD">PWD</option>
+              <option value="Senior">Senior</option>
+              <option value="Pregnant">Pregnant</option>
+              <option value="Regular">Regular</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="visitType">Visit Type *</label>
+            <select id="visitType" required>
+              <option value="">Select visit type</option>
+              <option value="New">New</option>
+              <option value="Old (Follow-up)">Old (Follow-up)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="department">Department *</label>
+            <select id="department" required>
+              <option value="">Select department</option>
+            </select>
+          </div>
+
+          <h2 class="page-title">2. REVIEW OF SYSTEMS</h2>
+          <div class="form-group">
+            <label for="chiefComplaint">1. Chief complaint (please describe)</label>
+            <textarea id="chiefComplaint" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>2. Loss of appetite, lack of sleep, weight loss, depression, fever, headache, memory loss, blurred vision, hearing loss?</label>
+            <div>
+              <label><input type="radio" name="ros2" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros2" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros2Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>3. Cough/colds, chest pain, palpitations, or difficulty in breathing?</label>
+            <div>
+              <label><input type="radio" name="ros3" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros3" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros3Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>4. Abdominal pain, vomiting, change in bowel movement, rectal bleeding, or bloody/tarry stools?</label>
+            <div>
+              <label><input type="radio" name="ros4" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros4" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros4Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>5. Frequent urination, frequent eating, frequent intake of fluids?</label>
+            <div>
+              <label><input type="radio" name="ros5" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros5" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros5Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>6. Pain/discomfort on urination, frequency/dribbling of urine, pain during/after sex, blood in urine, or foul-smelling genital discharge?</label>
+            <div>
+              <label><input type="radio" name="ros6" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros6" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros6Explain" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>7. (Females only) Last menstrual period / First menstrual period / Number of pregnancies</label>
+            <input type="text" id="lmp" placeholder="Last menstrual period (mm/dd/yyyy)" />
+            <input type="text" id="fmp" placeholder="First menstrual period (mm/dd/yyyy)" style="margin-top:6px;" />
+            <input type="number" id="pregnancies" placeholder="Number of pregnancy" style="margin-top:6px;" />
+          </div>
+          <div class="form-group">
+            <label>8. Muscle spasm, tremors, weakness; muscle/joint pain, stiffness, limitation of movement?</label>
+            <div>
+              <label><input type="radio" name="ros8" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="ros8" value="No"> No</label>
+            </div>
+            <label>If yes, please explain:</label>
+            <textarea id="ros8Explain" rows="2"></textarea>
+          </div>
+
+          <h2 class="page-title">3. PERSONAL/SOCIAL HISTORY</h2>
+          <div class="form-group">
+            <label>Do you smoke cigar, cigarette, e-cigarette, vape, or similar products?</label>
+            <div>
+              <label><input type="radio" name="smoke" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="smoke" value="No"> No</label>
+            </div>
+            <input type="number" id="smokeYears" placeholder="Number of years" style="margin-top:6px;" />
+          </div>
+          <div class="form-group">
+            <label>Do you drink alcohol or alcohol-containing beverages?</label>
+            <div>
+              <label><input type="radio" name="alcohol" value="Yes"> Yes</label>
+              <label style="margin-left:12px;"><input type="radio" name="alcohol" value="No"> No</label>
+            </div>
+            <input type="number" id="alcoholYears" placeholder="Number of years" style="margin-top:6px;" />
+          </div>
+
+          <h2 class="page-title">4. PAST MEDICAL HISTORY</h2>
+          <div class="form-group">
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <label><input type="checkbox" name="pmh" value="Cancer"> Cancer</label>
+              <label><input type="checkbox" name="pmh" value="Allergies"> Allergies</label>
+              <label><input type="checkbox" name="pmh" value="Diabetes Mellitus"> Diabetes Mellitus</label>
+              <label><input type="checkbox" name="pmh" value="Hypertension"> Hypertension</label>
+              <label><input type="checkbox" name="pmh" value="Heart Disease"> Heart Disease</label>
+              <label><input type="checkbox" name="pmh" value="Stroke"> Stroke</label>
+              <label><input type="checkbox" name="pmh" value="Bronchial asthma"> Bronchial asthma</label>
+              <label><input type="checkbox" name="pmh" value="COPD/emphysema/bronchitis"> COPD/emphysema/bronchitis</label>
+              <label><input type="checkbox" name="pmh" value="Tuberculosis"> Tuberculosis</label>
+              <label><input type="checkbox" name="pmh" value="Others"> Others</label>
+              <label><input type="checkbox" name="pmh" value="None"> None</label>
+            </div>
+            <input type="text" id="pmhOthers" placeholder="If others, please specify" style="margin-top:6px;" />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel">Cancel</button>
+            <button type="submit" class="modal-save">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const openBtn = document.getElementById('enterQueueBtn');
+      const overlay = document.getElementById('patientQueueModal');
+      const closeBtn = overlay.querySelector('.modal-close');
+      const cancelBtn = overlay.querySelector('.modal-cancel');
+      const form = document.getElementById('addPatientForm');
+
+      // Load departments on page load
+      async function loadDepartments() {
+        try {
+          const response = await fetch('backend/list_departments.php');
+          const result = await response.json();
+          if (result.ok) {
+            const departmentSelect = document.getElementById('department');
+            departmentSelect.innerHTML = '<option value="">Select department</option>';
+            result.data.forEach(dept => {
+              const option = document.createElement('option');
+              option.value = dept.department_id;
+              option.textContent = dept.department_name;
+              departmentSelect.appendChild(option);
+            });
+          }
+        } catch (error) {
+          console.error('Error loading departments:', error);
+        }
+      }
+
+      function openModal() {
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        loadDepartments();
+      }
+      function closeModal() {
+        overlay.classList.add('hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      openBtn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Collect form data
+        const formData = new FormData();
+        
+        // Required fields
+        const lastName = document.getElementById('lastNameFull')?.value.trim() || '';
+        const firstName = document.getElementById('firstNameFull')?.value.trim() || '';
+        const middleName = document.getElementById('middleNameFull')?.value.trim() || '';
+        const extensionName = document.getElementById('extensionName')?.value.trim() || '';
+        const age = document.getElementById('age')?.value || '';
+        const dob = document.getElementById('dob')?.value || '';
+        const sex = document.querySelector('input[name="sex"]:checked')?.value || '';
+        const departmentId = document.getElementById('department')?.value || '';
+        const visitType = document.getElementById('visitType')?.value || '';
+        const clientType = document.getElementById('clientType')?.value || '';
+        
+        // Optional contact fields
+        const phone = document.getElementById('phone')?.value.trim() || '';
+        const address = document.getElementById('address')?.value.trim() || '';
+        const emergencyContact = document.getElementById('emergencyContact')?.value.trim() || '';
+        const emergencyPhone = document.getElementById('emergencyPhone')?.value.trim() || '';
+        const philHealthId = document.getElementById('philHealthId')?.value.trim() || '';
+        
+        // Validation
+        if (!lastName || !firstName || !age || !dob || !sex || !departmentId || !visitType || !clientType) {
+          alert('Please complete all required fields marked with *');
+          return;
+        }
+
+        // Add required fields
+        formData.append('first_name', firstName);
+        formData.append('last_name', lastName);
+        formData.append('middle_name', middleName);
+        formData.append('extension_name', extensionName);
+        formData.append('age', age);
+        formData.append('date_of_birth', dob);
+        formData.append('sex', sex);
+        formData.append('department_id', departmentId);
+        formData.append('visit_type', visitType);
+        formData.append('client_type', clientType);
+        
+        // Add optional fields
+        if (philHealthId) formData.append('philhealth_id', philHealthId);
+        if (phone) formData.append('phone', phone);
+        if (address) formData.append('address', address);
+        if (emergencyContact) formData.append('emergency_contact', emergencyContact);
+        if (emergencyPhone) formData.append('emergency_phone', emergencyPhone);
+        
+        // Medical history - Chief complaint
+        const chiefComplaint = document.getElementById('chiefComplaint')?.value.trim();
+        if (chiefComplaint) formData.append('chief_complaint', chiefComplaint);
+        
+        // Review of Systems
+        const ros2 = document.querySelector('input[name="ros2"]:checked')?.value;
+        if (ros2) formData.append('ros2', ros2);
+        const ros2Explain = document.getElementById('ros2Explain')?.value.trim();
+        if (ros2Explain) formData.append('symptoms_ros2', ros2Explain);
+        
+        const ros3 = document.querySelector('input[name="ros3"]:checked')?.value;
+        if (ros3) formData.append('ros3', ros3);
+        const ros3Explain = document.getElementById('ros3Explain')?.value.trim();
+        if (ros3Explain) formData.append('symptoms_ros3', ros3Explain);
+        
+        const ros4 = document.querySelector('input[name="ros4"]:checked')?.value;
+        if (ros4) formData.append('ros4', ros4);
+        const ros4Explain = document.getElementById('ros4Explain')?.value.trim();
+        if (ros4Explain) formData.append('symptoms_ros4', ros4Explain);
+        
+        const ros5 = document.querySelector('input[name="ros5"]:checked')?.value;
+        if (ros5) formData.append('ros5', ros5);
+        const ros5Explain = document.getElementById('ros5Explain')?.value.trim();
+        if (ros5Explain) formData.append('symptoms_ros5', ros5Explain);
+        
+        const ros6 = document.querySelector('input[name="ros6"]:checked')?.value;
+        if (ros6) formData.append('ros6', ros6);
+        const ros6Explain = document.getElementById('ros6Explain')?.value.trim();
+        if (ros6Explain) formData.append('symptoms_ros6', ros6Explain);
+        
+        const ros8 = document.querySelector('input[name="ros8"]:checked')?.value;
+        if (ros8) formData.append('ros8', ros8);
+        const ros8Explain = document.getElementById('ros8Explain')?.value.trim();
+        if (ros8Explain) formData.append('symptoms_ros8', ros8Explain);
+        
+        // Female-specific fields
+        const lmp = document.getElementById('lmp')?.value.trim();
+        if (lmp) formData.append('last_menstrual_period', lmp);
+        const fmp = document.getElementById('fmp')?.value.trim();
+        if (fmp) formData.append('first_menstrual_period', fmp);
+        const pregnancies = document.getElementById('pregnancies')?.value;
+        if (pregnancies) formData.append('number_of_pregnancies', pregnancies);
+        
+        // Personal/Social History
+        const smoke = document.querySelector('input[name="smoke"]:checked')?.value;
+        if (smoke) formData.append('smoking_status', smoke);
+        const smokeYears = document.getElementById('smokeYears')?.value;
+        if (smokeYears) formData.append('smoking_years', smokeYears);
+        
+        const alcohol = document.querySelector('input[name="alcohol"]:checked')?.value;
+        if (alcohol) formData.append('alcohol_status', alcohol);
+        const alcoholYears = document.getElementById('alcoholYears')?.value;
+        if (alcoholYears) formData.append('alcohol_years', alcoholYears);
+        
+        // Past Medical History
+        const pmhCheckboxes = document.querySelectorAll('input[name="pmh"]:checked');
+        const pmhValues = Array.from(pmhCheckboxes).map(cb => cb.value);
+        if (pmhValues.length > 0) formData.append('past_medical_history', pmhValues.join(', '));
+        
+        const pmhOthers = document.getElementById('pmhOthers')?.value.trim();
+        if (pmhOthers) formData.append('pmh_others', pmhOthers);
+
+        try {
+          const submitBtn = form.querySelector('.modal-save');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+          
+          const response = await fetch('backend/add_patient.php', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (result.ok) {
+            // Show ticket section with queue information
+            showTicketDisplay({
+              ticketNumber: result.data.queue_number,
+              caseNumber: result.data.case_number,
+              priority: result.data.priority,
+              queueId: result.data.visit_id || result.data.patient_id
+            });
+            
+            // Close the modal
+            document.getElementById('patientQueueModal').classList.add('hidden');
+          } else {
+            alert('Error: ' + result.error);
+          }
+        } catch (error) {
+          console.error('Error submitting patient:', error);
+          alert('Error submitting patient registration. Please try again.');
+        } finally {
+          const submitBtn = form.querySelector('.modal-save');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+        }
+      });
+    })();
+
+    // Ticket Display Functions
+    let ticketData = {};
+    let autoRefreshInterval;
+
+    function showTicketDisplay(data) {
+      ticketData = data;
+      
+      // Hide main content and show ticket section
+      document.querySelector('main.content').style.display = 'none';
+      document.getElementById('ticketSection').style.display = 'block';
+      
+      // Update ticket information
+      document.getElementById('ticketNumber').textContent = data.ticketNumber;
+      document.getElementById('caseNumber').textContent = data.caseNumber;
+      document.getElementById('priorityLevel').textContent = data.priority;
+      
+      // Set estimated wait time based on priority
+      const waitTimes = {
+        'Priority': '5 Minutes',
+        'Senior': '8 Minutes',
+        'PWD': '8 Minutes',
+        'Regular': '15 Minutes'
+      };
+      document.getElementById('estimatedWaitTime').textContent = waitTimes[data.priority] || '15 Minutes';
+      
+      // Load current serving number
+      loadCurrentServingNumber();
+      
+      // Start auto-refresh
+      startAutoRefresh();
+    }
+
+    async function loadCurrentServingNumber() {
+      try {
+        const response = await fetch('backend/get_queue_stats.php');
+        const result = await response.json();
+        
+        if (result.ok && result.data) {
+          // Get the current serving number (this would need to be implemented in the backend)
+          // For now, we'll show a placeholder or calculate based on queue stats
+          const currentServing = result.data.next_queue_number ? 
+            (result.data.next_queue_number - 1) : 
+            (ticketData.ticketNumber - 1);
+          
+          document.getElementById('nowServingNumber').textContent = currentServing > 0 ? currentServing : '000';
+        }
+      } catch (error) {
+        console.error('Error loading current serving number:', error);
+        document.getElementById('nowServingNumber').textContent = '000';
+      }
+    }
+
+    async function refreshTicketStatus() {
+      const refreshBtn = document.getElementById('refreshText');
+      const refreshLoader = document.getElementById('refreshLoader');
+      
+      // Show loading state
+      refreshBtn.style.display = 'none';
+      refreshLoader.style.display = 'inline-block';
+      
+      try {
+        await loadCurrentServingNumber();
+        
+        // Update status message based on position in queue
+        const currentServing = parseInt(document.getElementById('nowServingNumber').textContent);
+        const ticketNumber = parseInt(ticketData.ticketNumber);
+        
+        if (ticketNumber <= currentServing + 1) {
+          document.getElementById('ticketStatus').textContent = 'You are next to Check-in';
+        } else if (ticketNumber <= currentServing + 3) {
+          document.getElementById('ticketStatus').textContent = 'Please prepare to Check-in';
+        } else {
+          document.getElementById('ticketStatus').textContent = 'Please wait for your turn';
+        }
+        
+      } catch (error) {
+        console.error('Error refreshing status:', error);
+      } finally {
+        // Hide loading state
+        refreshLoader.style.display = 'none';
+        refreshBtn.style.display = 'inline';
+      }
+    }
+
+    function startAutoRefresh() {
+      // Clear any existing interval
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+      
+      // Refresh every 30 seconds
+      autoRefreshInterval = setInterval(() => {
+        refreshTicketStatus();
+      }, 30000);
+    }
+
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', stopAutoRefresh);
+  </script>
+
+  <!-- Ticket Display Section (Initially Hidden) -->
+  <div id="ticketSection" class="ticket-section" style="display: none;">
+    <div class="ticket-container">
+      <div class="ticket-header">
+        <h1>Your Queue Ticket</h1>
+      </div>
+      
+      <div class="ticket-content">
+        <!-- Ticket Number Display -->
+        <div class="ticket-number-section">
+          <div class="ticket-label">Ticket Number</div>
+          <div class="ticket-number" id="ticketNumber">000</div>
+          <div class="ticket-status" id="ticketStatus">You are next to Check-in</div>
+          <div class="ticket-wait-time">
+            <span>Estimated Wait Time:</span>
+            <span id="estimatedWaitTime">5 Minutes</span>
+          </div>
+        </div>
+
+        <!-- Now Serving Section -->
+        <div class="now-serving-section">
+          <div class="now-serving-label">Now Serving</div>
+          <div class="now-serving-number" id="nowServingNumber">000</div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="ticket-info">
+          <div class="info-item">
+            <span class="info-label">Case Number:</span>
+            <span id="caseNumber">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Priority:</span>
+            <span id="priorityLevel">Regular</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="ticket-actions">
+          <button class="btn btn-primary" onclick="refreshTicketStatus()">
+            <span id="refreshText">Refresh Status</span>
+            <span id="refreshLoader" class="loading" style="display: none;"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-logo-placeholder"></div>
+    <p>Let's join forces! For a more progressive General Trias.</p>
+  </footer>
+</body>
+</html>
