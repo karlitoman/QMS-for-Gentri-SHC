@@ -1,0 +1,351 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif; 
+}
+
+body {
+    background-color: #f4f4f4; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+header {
+    background-color: #ffffff; 
+    padding: 8px 20px;
+    text-align: center;
+}
+
+.header-content {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 64px 1fr 64px;
+    align-items: center;
+}
+
+header h1 {
+    color: #209a5b; 
+    font-size: 2.2em;
+    line-height: 1.15;
+    font-weight: bold;
+    margin-bottom: 0;
+    grid-column: 2;
+}
+
+header p {
+    color: #333;
+    font-size: 1.2em;
+    line-height: 1.2;
+    margin-top: 0;
+    grid-column: 2;
+}
+
+.left-logo {
+    position: static;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-image: url('../img/main_logo.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    grid-column: 1;
+    justify-self: start;
+    transform: translateY(4px);
+}
+
+
+
+main {
+    flex-grow: 1; /* Allows the main area to take up available space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../img/superhealthcenter_bg.png'); /* Replace with your actual background image file */
+    background-size: cover;
+    background-position: center;
+    padding: 50px 20px; /* Padding for when content doesn't fill the screen */
+}
+
+/* --- LOGIN CARD STYLES --- */
+
+.login-container {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(6px);
+    padding: 30px 30px 32px;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(230,232,235,0.9);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    animation: floatUp .7s ease-out .15s both;
+}
+
+/* Center Logo Placeholder inside the form */
+.center-logo {
+    width: 84px; /* Icon size tuned */
+    height: 84px;
+    background-image: url('../img/main_logo.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    border-radius: 50%;
+    margin: 0 auto 12px auto;
+}
+
+/* Role-specific icon overrides for login pages */
+.admin .center-logo { background-image: url('../img/admin_icon.png'); }
+.staff .center-logo { background-image: url('../img/staff_icon.png'); }
+.doctor .center-logo { background-image: url('../img/doctor_icon.png'); }
+
+/* Role label below icon, like in screenshots */
+.role-label {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-form label {
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 1.05em;
+    color: #333;
+}
+
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid #c9c9c9;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    background: #fff;
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="email"]:focus,
+.login-form input[type="password"]:focus {
+    border-color: #1a7bbd; /* Focus state blue */
+}
+
+.forgot-link {
+    text-align: left;
+    font-size: 0.92em;
+    color: #1a7bbd; /* Blue link color */
+    text-decoration: none;
+    margin: 6px 0 22px;
+    transition: color 0.2s;
+}
+
+.forgot-link:hover {
+    color: #0f4c81;
+}
+
+.login-button {
+    background-image: linear-gradient(135deg, #209a5b 0%, #158640 100%);
+    color: white;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 1.15em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .2s ease, opacity .15s ease;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+
+.login-button:hover {
+    background-color: #177a45; /* Darker green on hover */
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.22);
+}
+
+.verify-button {
+    margin-top: 8px;
+    background: #eef2f6;
+    color: #374151;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.verify-button:hover {
+    background: #e5e9f5;
+    color: #1f2937;
+    transform: translateY(-1px);
+}
+
+.verify-button {
+    margin-top: 8px;
+    background: #eef2f6;
+    color: #374151;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.verify-button:hover {
+    background: #e5e9f5;
+    color: #1f2937;
+    transform: translateY(-1px);
+}
+
+/* Entry animations */
+.header-content { animation: floatDown .6s ease-out both; }
+.header-content .left-logo { animation: floatDown .6s ease-out both; }
+.header-content h1 { animation: floatDown .6s ease-out .05s both; }
+.header-content p { animation: floatDown .6s ease-out .12s both; }
+.footer-content { animation: floatUp .6s ease-out .25s both; }
+.center-logo { box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+
+@keyframes floatUp { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes floatDown { 0% { opacity: 0; transform: translateY(-14px); } 100% { opacity: 1; transform: translateY(0); } }
+
+
+
+footer {
+    background-color: #1a7bbd; /* Blue background for the footer */
+    color: white;
+    padding: 15px 0;
+}
+
+.footer-content {
+    width: 100%;
+    max-width: none;
+    margin: 0; /* full-width so the footer logo can sit flush left */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0; /* remove left padding to align logo fully left */
+}
+
+.footer-logo-placeholder {
+    width: 75px; /* Logo size */
+    height: 75px;
+    margin-right: 15px;
+    background-image: url('../img/footer_logo.png');
+    background-size: cover;
+}
+
+footer p {
+    font-size: 0.9em;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Login overlay (centered success dialog) */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.login-overlay.show { opacity: 1; }
+
+.login-card {
+  background: #fff;
+  color: #222;
+  width: min(420px, calc(100% - 32px));
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  border: 1px solid #e6e8eb;
+  padding: 24px 20px 28px;
+  text-align: center;
+}
+
+.login-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid #34a853; /* green */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 12px;
+}
+.login-icon svg { width: 60px; height: 60px; }
+.login-card h2 { font-size: 22px; margin: 8px 0 6px; }
+.login-card p { color: #5b6b82; margin: 0; }
+
+/* One-time CAPTCHA overlay */
+.captcha-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10001; }
+.captcha-card { background:#fff; color:#111; width:min(420px, calc(100% - 32px)); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25); border:1px solid #e6e8eb; padding:20px; text-align:center; }
+.captcha-card h2 { font-size:20px; margin:0 0 8px; color:#1f2937; }
+.captcha-card p { margin:0 0 12px; color:#6b7280; }
+.captcha-code { user-select:none; font-family: monospace; font-size:26px; letter-spacing:6px; background:linear-gradient(135deg,#f7f9ff,#eef2ff); border:1px solid #cdd6e4; border-radius:10px; padding:10px 14px; margin:0 auto 12px; width:max-content; }
+.captcha-input-row { display:flex; gap:8px; align-items:center; justify-content:center; }
+.captcha-input-row input { padding:10px 12px; border:1px solid #cdd6e4; border-radius:8px; font-size:14px; width:180px; }
+.captcha-refresh { background:#eef2f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; padding:10px 12px; cursor:pointer; }
+.captcha-actions { margin-top:12px; }
+.captcha-verify { background:#209a5b; color:#fff; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
+.captcha-verify:hover { background:#158640; }
+
+/* One-time CAPTCHA overlay */
+.captcha-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10001; }
+.captcha-card { background:#fff; color:#111; width:min(420px, calc(100% - 32px)); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25); border:1px solid #e6e8eb; padding:20px; text-align:center; }
+.captcha-card h2 { font-size:20px; margin:0 0 8px; color:#1f2937; }
+.captcha-card p { margin:0 0 12px; color:#6b7280; }
+.captcha-code { user-select:none; font-family: monospace; font-size:26px; letter-spacing:6px; background:linear-gradient(135deg,#f7f9ff,#eef2ff); border:1px solid #cdd6e4; border-radius:10px; padding:10px 14px; margin:0 auto 12px; width:max-content; }
+.captcha-input-row { display:flex; gap:8px; align-items:center; justify-content:center; }
+.captcha-input-row input { padding:10px 12px; border:1px solid #cdd6e4; border-radius:8px; font-size:14px; width:180px; }
+.captcha-refresh { background:#eef2f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; padding:10px 12px; cursor:pointer; }
+.captcha-actions { margin-top:12px; }
+.captcha-verify { background:#209a5b; color:#fff; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
+.captcha-verify:hover { background:#158640; }
+
+/* One-time CAPTCHA overlay */
+.captcha-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10001; }
+.captcha-card { background:#fff; color:#111; width:min(420px, calc(100% - 32px)); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25); border:1px solid #e6e8eb; padding:20px; text-align:center; }
+.captcha-card h2 { font-size:20px; margin:0 0 8px; color:#1f2937; }
+.captcha-card p { margin:0 0 12px; color:#6b7280; }
+.captcha-code { user-select:none; font-family: monospace; font-size:26px; letter-spacing:6px; background:linear-gradient(135deg,#f7f9ff,#eef2ff); border:1px solid #cdd6e4; border-radius:10px; padding:10px 14px; margin:0 auto 12px; width:max-content; }
+.captcha-input-row { display:flex; gap:8px; align-items:center; justify-content:center; }
+.captcha-input-row input { padding:10px 12px; border:1px solid #cdd6e4; border-radius:8px; font-size:14px; width:180px; }
+.captcha-refresh { background:#eef2f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; padding:10px 12px; cursor:pointer; }
+.captcha-actions { margin-top:12px; }
+.captcha-verify { background:#209a5b; color:#fff; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
+.captcha-verify:hover { background:#158640; }
+
+/* One-time CAPTCHA overlay */
+.captcha-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10001; }
+.captcha-card { background:#fff; color:#111; width:min(420px, calc(100% - 32px)); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25); border:1px solid #e6e8eb; padding:20px; text-align:center; }
+.captcha-card h2 { font-size:20px; margin:0 0 8px; color:#1f2937; }
+.captcha-card p { margin:0 0 12px; color:#6b7280; }
+.captcha-code { user-select:none; font-family: monospace; font-size:26px; letter-spacing:6px; background:linear-gradient(135deg,#f7f9ff,#eef2ff); border:1px solid #cdd6e4; border-radius:10px; padding:10px 14px; margin:0 auto 12px; width:max-content; }
+.captcha-input-row { display:flex; gap:8px; align-items:center; justify-content:center; }
+.captcha-input-row input { padding:10px 12px; border:1px solid #cdd6e4; border-radius:8px; font-size:14px; width:180px; }
+.captcha-refresh { background:#eef2f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; padding:10px 12px; cursor:pointer; }
+.captcha-actions { margin-top:12px; }
+.captcha-verify { background:#209a5b; color:#fff; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
+.captcha-verify:hover { background:#158640; }
+
+.toast { position: fixed; top: 14px; left: 50%; transform: translateX(-50%) translateY(-6px); background: #111827; color: #fff; padding: 10px 14px; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.18); opacity: 0; transition: opacity .2s ease, transform .2s ease; z-index: 10000; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-error { background: #dc2626; }
+.toast-success { background: #209a5b; }
+
+.input-error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
+@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+.login-container.shake { animation: shake .3s linear; }
+.toast-success { background: #209a5b; }
+
+.input-error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
+@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+.login-container.shake { animation: shake .3s linear; }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Trias Super Health Center Login</title>
+    <link rel="stylesheet" href="assets/css/login_style.css">
+</head>
+<body class="admin">
+    <header>
+        <div class="header-content">
+            <div class="logo-placeholder left-logo"></div>
+            <h1>GENERAL TRIAS SUPER HEALTH CENTER</h1>
+            <p>Arnaldo Hwy, General Trias, Cavite</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="login-container">
+            <div class="logo-placeholder center-logo"></div>
+            <h2 class="role-label">ADMIN</h2>
+            
+            <form action="admin_index.html" method="POST" class="login-form">
+                <label for="username">Email</label>
+                        <input type="email" id="username" name="username" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+
+                <a href="#" class="forgot-link">Forgotten your email and password?</a>
+
+                <button type="submit" class="login-button">LOGIN</button>
+                <button type="button" id="verifyHumanBtn" class="login-button verify-button">Verify Once</button>
+            </form>
+        </div>
+    </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-logo-placeholder"></div>
+      <p>Let's join forces! For a more progressive General Trias.</p>
+    </div>
+  </footer>
+  <script src="assets/js/login.js" defer></script>
+</body>
+</html>

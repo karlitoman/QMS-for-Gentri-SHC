@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Live Queue Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html,body { height:100%; margin:0; color:#0f172a; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(180deg,#f9fafb 0%, #ffffff 100%); }
+    .wrap { display:flex; height:100%; align-items:center; justify-content:center; padding:32px; }
+    .tvbox { width:95vw; max-width:1800px; max-height:92vh; background: rgba(255,255,255,0.92); border:1px solid #e5e7eb; border-radius:28px; box-shadow: 0 30px 70px rgba(17,24,39,.12); padding:28px; display:flex; flex-direction:column; backdrop-filter: blur(8px); }
+    header { display:flex; align-items:flex-end; justify-content:space-between; padding:0 4px 20px; border-bottom:1px solid #e5e7eb; }
+    header .brand { font-size:32px; font-weight:900; letter-spacing:.3px; color:#1f2937; }
+    header .clock { font-size:42px; font-weight:800; font-variant-numeric: tabular-nums; color:#2563eb; text-shadow: 0 6px 18px rgba(37,99,235,.12); }
+    header .status { font-size:16px; padding:8px 12px; border-radius:999px; border:1px solid #e5e7eb; box-shadow:0 6px 14px rgba(17,24,39,.08); }
+    header .status.ok { background:#dcfce7; color:#065f46; }
+    header .status.bad { background:#fee2e2; color:#7f1d1d; }
+    .grid { flex:1; display:grid; grid-template-columns: 1fr; gap:28px; padding:24px 8px; }
+    .card { position:relative; background: rgba(255,255,255,0.86); border:1px solid #e5e7eb; border-radius:24px; padding:32px; box-shadow: 0 18px 48px rgba(17,24,39,.14); overflow:hidden; backdrop-filter: blur(6px); max-width:1600px; justify-self:center; }
+    .card::before { content:''; position:absolute; inset:-2px; border-radius:26px; background: radial-gradient(220px 220px at 15% 0%, rgba(147,197,253,.22), transparent 60%), radial-gradient(220px 220px at 100% 100%, rgba(16,185,129,.16), transparent 60%); pointer-events:none; }
+    .dept { font-size:44px; font-weight:900; margin-bottom:16px; color:#1f2937; }
+    .now { display:flex; align-items:center; gap:18px; margin:10px 0 22px; }
+    .label { font-size:26px; color:#374151; }
+    .number { font-size:80px; font-weight:900; letter-spacing:8px; line-height:1; color:#111827; text-shadow: 0 8px 18px rgba(17,24,39,.10); }
+    .number.updated { animation: glowFlash .9s ease-out, fadeIn .6s ease-out; transform: scale(1.02); }
+    .counts { display:flex; gap:16px; flex-wrap:wrap; margin-top:auto; }
+    .pill { display:inline-flex; align-items:center; gap:10px; padding:10px 16px; border-radius:999px; font-weight:800; font-size:24px; border:1px solid #e5e7eb; box-shadow: 0 8px 18px rgba(31,41,55,.10); }
+    .pill.red { background:#fee2e2; color:#b91c1c; }
+    .pill.green { background:#d1fae5; color:#047857; }
+    .pill.slide { animation: slideUp .5s ease-out; }
+    .progress { position:relative; height:12px; background:#f3f4f6; border-radius:999px; overflow:hidden; box-shadow: inset 0 0 8px rgba(17,24,39,.08); margin-top:16px; }
+    .progress .pri { height:100%; background: linear-gradient(90deg,#ef4444,#dc2626); transition: width .6s ease-out; }
+    .progress .reg { position:absolute; left:0; top:0; height:100%; background: linear-gradient(90deg,#10b981,#059669); transition: width .6s ease-out; opacity:.85; }
+    .small { font-size:14px; color:#6b7280; margin-top:12px; }
+    .ticker { height:56px; border-top:1px solid #e5e7eb; margin-top:8px; overflow:hidden; }
+    .ticker .track { display:inline-flex; gap:48px; white-space:nowrap; padding:12px 0; animation: tickerScroll 28s linear infinite; }
+    .ticker .track span { font-size:20px; color:#374151; }
+    .net { position:absolute; inset:auto 24px 24px auto; background:#111827; color:#ffffff; padding:8px 12px; border-radius:10px; box-shadow:0 10px 24px rgba(17,24,39,.18); display:none; }
+    @keyframes glowFlash { 0%{ filter: brightness(1) } 40%{ filter: brightness(1.18) } 100%{ filter: brightness(1) } }
+    @keyframes fadeIn { from{ opacity:0 } to{ opacity:1 } }
+    @keyframes slideUp { from{ transform: translateY(8px); opacity:.6 } to{ transform: translateY(0); opacity:1 } }
+    @keyframes tickerScroll { from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tvbox">
+      <header><span class="brand">General Trias SHC — Live Queue Display</span><div style="display:flex; align-items:center; gap:16px;"><span id="status" class="status ok">Connected</span><span id="clock" class="clock"></span></div></header>
+      <div id="grid" class="grid"></div>
+      <div id="ticker" class="ticker"><div class="track" id="tickerTrack"></div></div>
+      <div id="net" class="net" aria-live="polite">Reconnecting…</div>>
+    </div>
+  </div>
+  <script>
+    async function getJSON(url){ const r = await fetch(url); const j = await r.json(); return j?.data ?? j; }
+    function groupByDept(items){
+      const g = {};
+      (items||[]).forEach(x=>{
+        const k = (x.department_name||'').trim() || 'Unknown';
+        g[k] = g[k] || [];
+        g[k].push(x);
+      });
+      return g;
+    }
+    function updateClock(){ const el=document.getElementById('clock'); if(!el) return; const d=new Date(); el.textContent = d.toLocaleString(); }
+    const prevState = {};
+    let lastRefresh = Date.now();
+    function playChime(){ try { const ctx = new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=880; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime+0.05); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.45); o.start(); o.stop(ctx.currentTime+0.5); } catch(_){} }
+    function render(depts){
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      const names = Object.keys(depts).sort();
+      let totalPri = 0, totalReg = 0;
+      names.forEach(name=>{
+        const list = depts[name];
+        const called = list.filter(x => (x.status||'').toLowerCase()==='called').map(x=>x.queue_number).sort((a,b)=>a-b)[0] ?? '—';
+        const waitPri = list.filter(x => (x.status||'').toLowerCase()==='waiting' && (x.priority==='Emergency'||x.priority==='Priority')).length;
+        const waitReg = list.filter(x => (x.status||'').toLowerCase()==='waiting' && x.priority==='Regular').length;
+        totalPri += waitPri; totalReg += waitReg;
+        const totalWait = waitPri + waitReg;
+        const priPct = totalWait ? Math.round((waitPri/totalWait)*100) : 0;
+        const regPct = totalWait ? 100 - priPct : 0;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="dept">${name}</div>
+          <div class="now">
+            <span class="label">Now Serving</span>
+            <span class="number">${called==='—'?'—':String(called).padStart(3,'0')}</span>
+          </div>
+          <div class="counts">
+            <span class="pill red">Priority Waiting: ${waitPri}</span>
+            <span class="pill green">Regular Waiting: ${waitReg}</span>
+          </div>
+          <div class="progress">
+            <div class="pri" style="width:${priPct}%"></div>
+            <div class="reg" style="width:${regPct}%"></div>
+          </div>
+          <div class="small">Live updates on new tickets and calls</div>
+        `;
+        grid.appendChild(card);
+        const key = name.toLowerCase();
+        const numEl = card.querySelector('.number');
+        const pillPri = card.querySelector('.pill.red');
+        const pillReg = card.querySelector('.pill.green');
+        const prev = prevState[key] || {};
+        if (numEl && prev.called !== called) { numEl.classList.add('updated'); setTimeout(()=> numEl.classList.remove('updated'), 900); playChime(); }
+        if (pillPri && prev.waitPri !== waitPri) { pillPri.classList.add('slide'); setTimeout(()=> pillPri.classList.remove('slide'), 600); }
+        if (pillReg && prev.waitReg !== waitReg) { pillReg.classList.add('slide'); setTimeout(()=> pillReg.classList.remove('slide'), 600); }
+        prevState[key] = { called, waitPri, waitReg };
+        if (names.length === 1 || key === 'medical') { card.style.gridColumn = '1 / -1'; card.style.justifySelf = 'center'; card.style.maxWidth = '1600px'; }
+      });
+      const track = document.getElementById('tickerTrack');
+      if (track) {
+        const msg = (localStorage.getItem('tvTickerMsg')||'').trim();
+        const items = msg ? msg.split('|').map(s=>s.trim()).filter(Boolean) : [`Welcome to General Trias SHC`,`Priority Waiting: ${totalPri}`,`Regular Waiting: ${totalReg}`,`For emergencies, proceed to the Priority Desk`,`Please keep noise to a minimum`];
+        track.innerHTML = items.map(s=>`<span>${s}</span>`).join('');
+      }
+      lastRefresh = Date.now();
+      const st = document.getElementById('status'); if (st){ st.className = 'status ok'; st.textContent = 'Connected'; }
+      const net = document.getElementById('net'); if (net){ net.style.display = 'none'; }
+    }
+    async function refresh(){
+      try {
+        const items = await getJSON('backend/list_queue.php');
+        render(groupByDept(items));
+      } catch(e){}
+    }
+    (function subscribe(){
+      let sseOk = false;
+      try {
+        const es = new EventSource('backend/queue_sse.php');
+        es.onmessage = ()=> { sseOk = true; refresh(); };
+        es.onerror = ()=> { sseOk = false; };
+      } catch(e){}
+      try {
+        const bc = new BroadcastChannel('queue-updates');
+        bc.onmessage = ()=> refresh();
+      } catch(e){}
+      setInterval(()=>{
+        const st = document.getElementById('status');
+        const net = document.getElementById('net');
+        const stale = (Date.now() - lastRefresh) > 30000;
+        if (st) { st.className = stale ? 'status bad' : 'status ok'; st.textContent = stale ? 'Reconnecting' : 'Connected'; }
+        if (net) { net.style.display = stale ? 'block' : 'none'; }
+      }, 2000);
+    })();
+    refresh(); updateClock();
+    setInterval(refresh, 15000);
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
